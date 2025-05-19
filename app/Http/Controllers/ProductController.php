@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -20,15 +22,29 @@ class ProductController extends HelperController
         return $this->sendResponse($products, 'product retrieved successfully.');
     }
 
-    public function getCategoryWisProduct(Request $request)
+    public function getCategoryWiseProduct(Request $request)
     {
-        $category_id = $request->category_id;
+        $category_id = $request->input('category_id');
+
         if (!$category_id) {
-            return $this->sendError('Category ID is required', 400);
+            return $this->sendError('Category ID is required', [], 400);
         }
-        // Fetch products by category ID
-        $category = Product::where('category_id', $category_id)->get();
-        return $this->sendResponse($category, 'product retrieved successfully.');
+
+        // Try to find the category
+        $category = Category::find($category_id);
+
+        if (!$category) {
+            return $this->sendError('Category not found', [], 404);
+        }
+
+        // Get products for the category
+        $products = Product::where('category_id', $category_id)->get();
+        $data = [
+            'category' => $category,
+            'products' => $products,
+        ];
+
+        return $this->sendResponse($data, 'Products retrieved successfully.');
     }
 
 
@@ -73,9 +89,11 @@ class ProductController extends HelperController
         if ($request->category_id) {
             $categories = Product::where('category_id', $product->category_id)->whereNot('id', $product->id)->get();
         }
+        $reviews = Review::where('product_id', $product->id)->get();
         return $this->sendResponse([
             "products" => $product,
-            "categories" => $categories
+            "categories" => $categories,
+            "reviews" => $reviews
         ], 'product retrieved successfully.');
 
     }

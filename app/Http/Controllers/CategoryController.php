@@ -53,7 +53,7 @@ class CategoryController extends HelperController
         return $this->sendResponse($category, 'Category retrieved successfully.');
 
     }
-    public function update(Request $request, $id)
+    public function updateCategory(Request $request, $id)
     {
         $category = Category::find($id);
         if (!$category) {
@@ -72,8 +72,9 @@ class CategoryController extends HelperController
         }
         $category->name = $request->name;
         $category->save();
-        return $this->sendResponse($category, 'Category updated successfully.');
+
     }
+
     public function destroy($id)
     {
         $category = Category::find($id);

@@ -8,7 +8,9 @@ use App\Models\AgentDepositRequest;
 use App\Models\BetterBalance;
 use App\Models\BetterDepositRequest;
 use App\Models\EmailVerification;
+use App\Models\Orders;
 use App\Models\otp;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\WithdrawRequest;
 use Carbon\Carbon;
@@ -110,6 +112,30 @@ class AuthController extends HelperController
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ];
+    }
+
+    public function getAllCustomer()
+    {
+        $allCustomers = User::all();
+        return $this->sendResponse($allCustomers, "Get all Customers");
+    }
+    public function dashboard()
+    {
+        $customers = User::count();
+        $totalSales = Orders::count();
+        $totalProducts = Product::count();
+
+        // Assuming "recent sales" means last 7 days, adjust as needed
+        $totalRecentSales = Orders::where('created_at', '>=', now()->subDays(15))->get();
+
+        $data = [
+            'customers' => $customers,
+            'totalProducts' => $totalProducts,
+            'totalSales' => $totalSales,
+            'totalRecentSales' => $totalRecentSales,
+        ];
+
+        return $this->sendResponse($data, 'Dashboard data fetched successfully');
     }
 
 }
